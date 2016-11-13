@@ -1,8 +1,16 @@
+'''
+Script para baixar os resultados de vento a 10 metros do GFS
+via opendap. As informações são salvas em um arquivo netCDF.
+
+Criado por Rafael Vieira - maio/2016
+
+'''
+
 from pydap.client import open_url
 import numpy as np
 from netCDF4 import Dataset
 
-#acessar os dados por opendap no servidor
+#acessar os resultados via opendap no servidor
 u_component = open_url('http://nomads.ncep.noaa.gov:80/dods/gfs_0p25_1hr/gfs20160616/gfs_0p25_1hr_00z')['ugrd10m']
 v_component = open_url('http://nomads.ncep.noaa.gov:80/dods/gfs_0p25_1hr/gfs20160616/gfs_0p25_1hr_00z')['vgrd10m']
 tempo = open_url('http://nomads.ncep.noaa.gov:80/dods/gfs_0p25_1hr/gfs20160616/gfs_0p25_1hr_00z')['time'][0:121:3]
@@ -13,7 +21,7 @@ ugrd_10m = u_component.array[0:121:3,:,:]
 vgrd_10m = v_component.array[0:121:3,:,:]
 
 # criando arquivo netcdf
-dataset = Dataset('/home/piatam8/Desktop/rafael_ondas/wavewatch3/resultados_gfs/arquivo_criado/dap_wind.nc', 'w', format='NETCDF3_CLASSIC')
+dataset = Dataset('/home/piatam8/Desktop/rafael_ondas/wavewatch3/resultados_gfs/arquivo_criado/wnd_gfs10m.nc', 'w', format='NETCDF3_CLASSIC')
 
 # criando dimensoes
 lat = dataset.createDimension('latitude', lats.size)
@@ -29,15 +37,15 @@ times = dataset.createVariable('time', "f8", ('time',))
 u_wnd10m_component = dataset.createVariable('u_wnd10m_component', "f4", ('time', 'latitude', 'longitude'))
 v_wnd10m_component = dataset.createVariable('v_wnd10m_component', "f4", ('time', 'latitude', 'longitude'))
 
-# global attributes     
+# global attributes - adicionando atributos globais     
 dataset.description = 'NCEP/NOAA - GFS WIND - 0.25 degree'
 
-# variable attributes
+# variable attributes - adicionando os atributos das variaveis
 latitudes.units = 'degree_north'
 longitudes.units = 'degree_east'
 times.units = 'days since 0000-12-30 00:00:0.0'
 
-# adicionando dados 
+# adicionando as informacoes e concluindo o arquivo netCDF 
 latitudes[:] = lats
 longitudes[:] = lons
 u_wnd10m_component[:] = ugrd_10m[:]
